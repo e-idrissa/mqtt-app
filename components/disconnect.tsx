@@ -10,13 +10,13 @@ const Disconnect = () => {
 
   const handleDisconnect = () => {
     publishMessage('idrissa/servo', String(20));
-    publishMessage('idrissa/lights', "false");
+    publishMessage('idrissa/light', "false");
     disconnectMqtt();
     router.push('/'); 
   }
   return (
-    <TouchableOpacity onPress={handleDisconnect} className="border-2 border-blue-500 p-1 rounded-full">
-      <Icon name="link-off" size={20} color="#2563eb" />
+    <TouchableOpacity onPress={handleDisconnect} className="text-blue-500 py-2 rounded-full">
+      <Icon name="link-off" size={20} color="#3b82f6" />
     </TouchableOpacity>
   )
 }

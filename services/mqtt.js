@@ -1,8 +1,8 @@
-import { Client, Message } from 'react-native-paho-mqtt';
-import EventEmitter from 'events';
+import { Client, Message } from "react-native-paho-mqtt";
+import EventEmitter from "events";
 
 // Use a WebSocket URI for the Expo environment
-const URI = 'ws://broker.hivemq.com:8000/mqtt'; 
+const URI = "ws://broker.hivemq.com:8000/mqtt";
 const CLIENT_ID = `expo_client_${Math.random().toString(16).substr(2, 8)}`;
 
 const myStorage = {
@@ -24,27 +24,58 @@ const client = new Client({
 // Create an event emitter to broadcast incoming messages
 export const mqttEvents = new EventEmitter();
 
-client.on('connectionLost', (response) => {
-  console.log('❌ Connection lost:', response.errorMessage);
-  mqttEvents.emit('connectionChange', false);
+client.on("connectionLost", (response) => {
+  console.log("❌ Connection lost:", response.errorMessage);
+  mqttEvents.emit("connectionChange", false);
 });
 
-client.on('messageReceived', (message) => {
-  // console.log('📩 Message received on topic:', message.destinationName);
-  mqttEvents.emit('messageReceived', message.destinationName, message.payloadString);
+client.on("messageReceived", (message) => {
+  // Gère les messages en fonction du sujet pour une meilleure organisation
+  switch (message.destinationName) {
+    case "idrissa/dht":
+      mqttEvents.emit("tempData", message.payloadString);
+      break;
+    case "idrissa/ldr":
+      mqttEvents.emit("ldrData", message.payloadString);
+      break;
+    case "idrissa/motion":
+      mqttEvents.emit("motionData", message.payloadString);
+      break;
+    case "idrissa/servo":
+      mqttEvents.emit("servoData", message.payloadString);
+      break;
+    case "idrissa/light":
+      mqttEvents.emit("lightData", message.payloadString);
+      break;
+    default:
+      // Émet un événement générique pour les autres messages
+      mqttEvents.emit(
+        "messageReceived",
+        message.destinationName,
+        message.payloadString
+      );
+      break;
+  }
 });
 
 export const connectMqtt = async () => {
   try {
     await client.connect();
-    console.log('✅ Connected to MQTT broker!');
-    mqttEvents.emit('connectionChange', true);
-    await client.subscribe('idrissa/Tempdata');
-    console.log('✅ Subscribed to topic: idrissa/Tempdata');
+    console.log("✅ Connected to MQTT broker!");
+    mqttEvents.emit("connectionChange", true);
+
+    // S'abonne à tous les topics pertinents
+    await client.subscribe("idrissa/dht");
+    await client.subscribe("idrissa/ldr");
+    await client.subscribe("idrissa/motion");
+    await client.subscribe("idrissa/servo");
+    await client.subscribe("idrissa/light");
+
+    console.log("✅ Subscribed to all relevant topics");
     return true;
   } catch (error) {
-    console.error('❌ MQTT connection failed:', error);
-    mqttEvents.emit('connectionChange', false);
+    console.error("❌ MQTT connection failed:", error);
+    mqttEvents.emit("connectionChange", false);
     return false;
   }
 };
@@ -52,14 +83,14 @@ export const connectMqtt = async () => {
 export const disconnectMqtt = () => {
   if (client.isConnected()) {
     client.disconnect();
-    mqttEvents.emit('connectionChange', false);
-    console.log('🔴 Disconnected from MQTT broker.');
+    mqttEvents.emit("connectionChange", false);
+    console.log("🔴 Disconnected from MQTT broker.");
   }
 };
 
 export const publishMessage = async (topic, payload) => {
   if (!client.isConnected()) {
-    console.warn('⚠️ Not connected to MQTT broker. Cannot publish.');
+    console.warn("⚠️ Not connected to MQTT broker. Cannot publish.");
     return;
   }
   const message = new Message(payload);

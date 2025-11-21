@@ -1,29 +1,29 @@
-import { Link } from "expo-router";
 import { useState, useEffect } from "react";
-import { Image, Text, View } from "react-native";
-import Icon from "react-native-vector-icons/Feather";
+import { Text, TouchableOpacity, View } from "react-native";
+import { useColorScheme } from "nativewind";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useRouter } from "expo-router";
 
 import { connectMqtt, disconnectMqtt, mqttEvents } from "@/services/mqtt";
+import { cn } from "@/lib/utils";
+import Spec from "@/components/spec";
 
 export default function Index() {
+  const { colorScheme } = useColorScheme();
+  const router = useRouter();
+
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // 1. Define the handler for connection changes
     const handleConnectionChange = (status: boolean) => {
       setIsConnected(status);
     };
 
-    // 2. Subscribe to the connection change event
     mqttEvents.on("connectionChange", handleConnectionChange);
 
-    // 3. Initiate the MQTT connection
-    // We don't await connectMqtt() here to avoid blocking the UI thread,
-    // as the status update is handled by the event listener (handleConnectionChange).
     connectMqtt();
 
-    // 4. Cleanup function: runs when the component unmounts
     return () => {
       mqttEvents.off("connectionChange", handleConnectionChange);
       disconnectMqtt();
@@ -31,49 +31,60 @@ export default function Index() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 items-center justify-between my-10">
-      <View className="flex items-center gap-4">
-        <View className="mt-16 size-24 rounded-full">
-          <Image
-            source={require("../assets/icons/home.png")}
-            className="h-full w-full rounded-full"
-          />
+    <SafeAreaView
+      className={cn(
+        `flex-1 w-full pb-4`,
+        colorScheme === "dark" ? "bg-black" : "bg-gray-100"
+      )}
+    >
+      <View className="relative flex items-start gap-4 w-full h-full">
+        <View className="absolute top-10 right-10 flex flex-col rounded-full items-center">
+          <Icon name="bulb-outline" size={50} color="#3b82f6" />
+          <View className="h-96 w-1 bg-blue-500"/>
         </View>
-        <View className="h-1 w-16 rounded-full bg-gray-300" />
-        <View>
-          <Text className="text-3xl font-semibold text-center text-gray-700">
-            Home Control
-          </Text>
-          <Text className="text-muted-foreground text-center text-gray-500">
-            Modern IoT Home Control App
-          </Text>
-        </View>
-        <View className="flex flex-row gap-2 items-center text-mono rounded bg-white p-2 mt-6">
-          <View
-            className={`size-2 rounded-full ${
-              isConnected ? "bg-green-500" : "bg-gray-300"
-            }`}
-          />
-          <Text className="text-gray-500">
-            {isConnected ? "Connected" : "Not Connected"}
-          </Text>
+        <View className="absolute top-1/4 p-8 h-3/4 flex justify-between w-full">
+          <View className="">
+            <View>
+              <Text
+                className={cn(
+                  `text-4xl font-extrabold`,
+                  colorScheme === "dark" ? "text-white" : "text-gray-700"
+                )}
+              >
+                Home Control
+              </Text>
+              <Text
+                className={cn(
+                  `text-lg`,
+                  colorScheme === "dark" ? "text-white" : "text-gray-700"
+                )}
+              >
+                Modern IoT Home Control App
+              </Text>
+            </View>
+            <View className="flex flex-col gap-6 mt-8">
+              <Spec
+                icon={"thermometer-outline"}
+                title={"Environmental Insights"}
+              />
+              <Spec icon={"sunny-outline"} title={"Light Control"} />
+              <Spec icon={"accessibility-outline"} title={"Motion Detection"} />
+            </View>
+          </View>
+          <TouchableOpacity
+            disabled={!isConnected}
+            onPress={() => router.push("/control")}
+            className={cn(
+              "flex flex-row items-center justify-center gap-12 rounded-xl p-4 w-full",
+              isConnected ? " bg-blue-500" : " bg-blue-500/70"
+            )}
+          >
+            <Text className="text-white text-xl font-medium">
+              {isConnected ? "Control Center" : "Connecting..."}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
-      {isConnected ? (
-        <View className="flex flex-row items-center justify-center gap-12 rounded-full bg-white p-2">
-          <Text className="ml-2 text-gray-500">Go to Control Center</Text>
-          <Link href="/control" className="rounded-full bg-blue-500 p-2">
-            <Icon name="arrow-right" size={12} color="#ffffff" />
-          </Link>
-        </View>
-      ) : (
-        <View className="flex flex-row items-center justify-center gap-12 rounded-full bg-white p-2">
-          <Text className="ml-2 text-gray-500">Go to Control Center</Text>
-          <View  className="rounded-full bg-gray-200 p-2">
-            <Icon name="loader" size={12} className="animate-spin" />
-          </View>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
