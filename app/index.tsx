@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import { useColorScheme } from "nativewind";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useColorScheme } from "nativewind";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 

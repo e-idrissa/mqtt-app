@@ -43,11 +43,11 @@ const Control = () => {
       setTempData(temp);
       setHumData(hum);
 
-      const currentTime = new Date().toLocaleTimeString('fr-FR', {
-          hour: '2-digit', 
-          minute: '2-digit', 
-          second: '2-digit', 
-          hour12: false // Force le format 24 heures (ex: 15:30:45)
+      const currentTime = new Date().toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false, // Force le format 24 heures (ex: 15:30:45)
       });
 
       // 2. Mettre à jour les données historiques avec la nouvelle lecture
@@ -124,17 +124,7 @@ const Control = () => {
               ))}
             </View>
           </View>
-          <View
-            // className={cn(
-            //   "border px-2 py-4 rounded-lg flex-1 gap-2 w-full -mt-4",
-            //   colorScheme === "dark"
-            //     ? "bg-zinc-900 border-zinc-700"
-            //     : "bg-zinc-200/30 border-zinc-200"
-            // )}
-          >
-            {/* <ChartCard historicalData={historicalData} /> */}
-          </View>
-            <Chart data={historicalData} />
+          <Chart data={historicalData} />
           {/* Sensors */}
           <View className="gap-4 w-full">
             <Text
